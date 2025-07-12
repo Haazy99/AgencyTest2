@@ -13,7 +13,19 @@ export default function LeadExportSection({ leads }: { leads: D7Lead[] }) {
       const limitedLeads = leads.slice(0, 20);
       const scanner = new FacebookScanner();
       const results = await scanner.scanPages(limitedLeads);
-      setScannedLeads(results);
+      // Ensure facebookPageStatus is only 'active', 'inaccessible', or undefined
+      const sanitizedResults = (results as any[]).map((lead) => {
+        if (
+          lead.facebookPageStatus !== 'active' &&
+          lead.facebookPageStatus !== 'inaccessible' &&
+          lead.facebookPageStatus !== undefined
+        ) {
+          // Remove or fix invalid status
+          return { ...lead, facebookPageStatus: undefined };
+        }
+        return lead;
+      });
+      setScannedLeads(sanitizedResults as D7Lead[]);
     } catch (error) {
       console.error('Error scanning ads:', error);
       // Show error notification or message to user
